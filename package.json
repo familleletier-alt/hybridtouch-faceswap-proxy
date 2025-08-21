@@ -1,0 +1,7 @@
+{
+  "name": "hybridtouch-faceswap-proxy",
+  "version": "1.0.0",
+  "dependencies": {
+    "replicate": "^0.22.0"
+  }
+}
