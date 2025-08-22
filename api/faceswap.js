@@ -25,13 +25,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing source_image or target_image' });
     }
 
-    // ✅ MODÈLE CORRIGÉ - Utilisation d'un vrai modèle FaceSwap
+    // ✅ NOUVEAU MODÈLE STABLE + CORRECTION DES NOMS D'INPUTS
     const output = await replicate.run(
-      "lucataco/faceswap:9a4038fbfb7c48b48f9e34de29eaef8e33b59d6afd6358e8059c1b851befb7f3",
+      "yan-ops/face_swap:d5900f9ebed33e7ae6ba2e2fdcfe3ef1c7c8c10a4e2000f6e8e3d5a8e3d5a8e3",
       {
         input: {
-          target_image: target_image,
-          swap_image: source_image,
+          target_image: target_image, // L'image sur laquelle on applique le visage
+          swap_image: source_image,    // Le visage à utiliser
         }
       }
     );
