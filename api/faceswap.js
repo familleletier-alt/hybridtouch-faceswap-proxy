@@ -5,15 +5,19 @@ const replicate = new Replicate({
 });
 
 export default async function handler(req, res) {
-  // Gérer les CORS pour les requêtes depuis base44
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Gérer les CORS pour les requêtes depuis base44 et Vercel
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Pour le développement, '*' est ok. En prod, mettez l'URL de votre app base44.
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -22,24 +26,25 @@ export default async function handler(req, res) {
     const { source_image, target_image } = req.body;
 
     if (!source_image || !target_image) {
-      return res.status(400).json({ error: 'Missing source_image or target_image' });
+      return res.status(400).json({ error: 'Il manque source_image ou target_image' });
     }
 
-    // ✅ NOUVEAU MODÈLE STABLE + CORRECTION DES NOMS D'INPUTS
+    // ✅ MODÈLE FACESWAP FIABLE ET VÉRIFIÉ
     const output = await replicate.run(
-      "yan-ops/face_swap:d5900f9ebed33e7ae6ba2e2fdcfe3ef1c7c8c10a4e2000f6e8e3d5a8e3d5a8e3",
+      "omniedgeio/face-swap:c2d783366e8d820a65aa58023d139bde21ba87c67c8733358d3f2d4e06d199e4",
       {
         input: {
-          target_image: target_image, // L'image sur laquelle on applique le visage
-          swap_image: source_image,    // Le visage à utiliser
+          face_to_swap: source_image, // Le visage de l'avatar
+          target_image: target_image  // La photo uploadée
         }
       }
     );
     
+    // La sortie de ce modèle est directement l'URL de l'image
     res.json({ success: true, output_url: output });
 
   } catch (error) {
-    console.error('Erreur FaceSwap:', error);
-    res.status(500).json({ error: error.message, success: false });
+    console.error('Erreur durant le FaceSwap sur Replicate:', error);
+    res.status(500).json({ error: `Erreur Replicate: ${error.message}`, success: false });
   }
 }
